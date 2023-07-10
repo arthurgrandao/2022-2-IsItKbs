@@ -240,7 +240,7 @@ class isitkbs(object):
                     index += 1; 
                     continue
 
-                escolha = input(f"What would you like to do with the KBS: {word}"+
+                escolha = input(f"\nWhat would you like to do with the KBS: {word}\n"+
                                 "[1] Remove\n"+
                                 "[2] Replace\n"+
                                 "[3] Replace all\n"+
@@ -434,4 +434,3 @@ class lex_extractor():
             if cls.__bigramas_proibidos(cls, string): return 1
         except:
             return 0
-

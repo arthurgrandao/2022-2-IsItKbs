@@ -1,3 +1,7 @@
+# Os testes estão aqui pois o arquivo existente no projeto utiliza o pacote no pip para realização dos testes,
+# então para efeitos práticos, eu coloquei o arquivo no mesmo módulo em que se encontra a classe com a funcionalidade
+# a ser testada
+
 import pytest
 from .ks import isitkbs
 
