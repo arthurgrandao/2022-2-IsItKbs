@@ -7,6 +7,8 @@ from scipy.sparse import hstack, csr_matrix
 import numpy as np
 import warnings
 warnings.filterwarnings("ignore")
+
+
 class isitkbs(object):
 
     def __init__(self, model='randomforest'):
@@ -28,10 +30,10 @@ class isitkbs(object):
         :return:  1 se input_data é um keyboard smashing, 0 caso contrário
         :rtype: int
         """
-        
+
         if not isinstance(input_data, str):
             raise TypeError("input_data must be a string")
-        
+
         if lex_extractor._is_kbs_manual(string=input_data):
             return 1
 
@@ -69,7 +71,7 @@ class isitkbs(object):
         :rtype: lista
         """
         mashs = []
-        
+
         if isinstance(input_data, str):
             words = input_data.split()
         elif isinstance(input_data, list):
@@ -86,7 +88,7 @@ class isitkbs(object):
                     res = self.wordkbs(word)
                     if res == 1:
                         mashs.append(word)
-        
+
         return mashs
 
     def freqkbs(self, input_data, graph=False):
@@ -142,8 +144,8 @@ class isitkbs(object):
         :type just_word: bool, opcional
         :return: Uma cópia de input_data com os keyboard smashings identificados substituídos pelo valor passado no parâmetro value. Caso input_data seja um pd.DataFrame e o parâmetro inplace=True o retorno é nulo, pois as substituições são feitas inplace.  
         :rtype: string ou lista ou pd.DataFrame
-        """        
-        
+        """
+
         value = value or "itskbs"
 
         # Se o tipo de entrada for um dataframe pandas, a função __dataframe é chamada para fazer o tratamento
@@ -204,7 +206,7 @@ class isitkbs(object):
         if type(input_data) == str:
             input_data = input_data.split()
             is_list = False
-        
+
         wordskbs = self.sentkbs(input_data)
         output_data = []
         for i in input_data:
@@ -222,7 +224,50 @@ class isitkbs(object):
             else:
                 output_data.append(value if i in wordskbs else i)
         return ' '.join(output_data) if not is_list else output_data
-    
+
+    def custom_replace_kbs(self, string):
+        words = string.split()
+        index = 0
+        replace_all = {}
+        ignore_all = []
+        for word in words:
+            if self.wordkbs(word):    
+                if word in replace_all.keys():
+                    words[index] = replace_all.get(word)
+                    index += 1
+                    continue
+                if word in ignore_all:
+                    index += 1; 
+                    continue
+
+                escolha = input(f"What would you like to do with the KBS: {word}"+
+                                "[1] Remove\n"+
+                                "[2] Replace\n"+
+                                "[3] Replace all\n"+
+                                "[4] Ignore\n"+
+                                "[5] Ignore all\n"+
+                                '[6] Quit\n'
+                                "Selection: ")
+                if escolha == "1":
+                    words.pop(index)
+                elif escolha == "2":
+                    words[index] = input("Inform the word you'd like to replace it with: ")
+                elif escolha == "3":
+                    words[index] = input("Inform the word you'd like to replace it with: ")
+                    replace_all.update({word: words[index]})
+                elif escolha == "4":
+                    index += 1;
+                    continue
+                elif escolha == "5": 
+                    ignore_all.append(word)
+                elif escolha == "6":
+                    break
+
+            index += 1
+        
+        string = ' '.join(words)
+
+        return string 
 
 
 class lex_extractor():
@@ -257,9 +302,9 @@ class lex_extractor():
         :type type: string
         :return: A soma da quantidade total de vogais ou de consoantes da palavra
         :rtype: int
-        """           
+        """
         return sum(cls.letter_counter(string, type).values())
-    
+
     @classmethod
     def type_ratio(cls, string, type):
         """Cálcula a proporção de vogais ou consoantes em uma string de entrada.
@@ -321,7 +366,7 @@ class lex_extractor():
             return (sorted(cls.bigrams(string).values(), reverse=True))[0]
         except:
             return 0
-        
+
     @classmethod
     def ttr(cls, string):
         """Calcula o TypeTokenRatio (TTR) de uma string de entrada. O TTR é a quantidade de carácteres únicos divididade pelo tamanho total da string
@@ -355,8 +400,8 @@ class lex_extractor():
         for bigrama in bigramas:
             if bigrama in proibidos:
                 return 1
-        return 0   
-    
+        return 0
+
     def __repeticao_de_bigramas(self, string, len):
         """Dada uma string de entrada verifica se o número máximo de repetição de seus bigramas passou do limite das palavras normais ou não
 
@@ -370,7 +415,7 @@ class lex_extractor():
 
         max_o = self.bigram_max_occurance(string)
         if (max_o == 4 and len < 12) or max_o > 4:
-            return True 
+            return True
         return False
 
     @classmethod
@@ -382,11 +427,11 @@ class lex_extractor():
         :return: 0 se a string não for considerada keyboard smashing, 1 caso contrário
         :rtype: int
         """
-        try:    
+        try:
             length = len(string)
-            
+
             if cls.__repeticao_de_bigramas(cls, string, length): return 1
             if cls.__bigramas_proibidos(cls, string): return 1
         except:
             return 0
-        
+
